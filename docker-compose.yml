@@ -5,8 +5,8 @@ services:
     build: .
     container_name: notion-webhook
     ports:
-      - "4000:4000"
+      - "4325:4325"
     environment:
-      - PORT=4000
+      - PORT=4325
     restart: always
 
