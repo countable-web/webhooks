@@ -8,5 +8,11 @@ services:
       - "4325:4325"
     environment:
       - PORT=4325
+    networks:
+      - plugin_default
     restart: always
+
+networks:
+  plugin_default:
+    external: true
 
