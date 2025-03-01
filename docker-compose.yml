@@ -8,10 +8,5 @@ services:
       - "4325:4325"
     environment:
       - PORT=4325
-    networks:
-      - bridge
     restart: always
 
-networks:
-  bridge:
-    external: true
