@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 4325;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL; // Add your Slack Webhook URL
-
+console.log("SLACK WEBHOOK URL", SLACK_WEBHOOK_URL)
 
 app.use(bodyParser.json());
 
