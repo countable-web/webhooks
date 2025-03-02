@@ -6,6 +6,8 @@ services:
     container_name: notion-webhook
     ports:
       - "4325:4325"
+    env_file:
+      - .env
     environment:
       - PORT=4325
     networks:
