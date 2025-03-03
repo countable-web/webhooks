@@ -10,7 +10,7 @@ console.log("SLACK WEBHOOK URL", SLACK_WEBHOOK_URL);
 app.use(bodyParser.json());
 
 // List of allowed authors (first names only)
-const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha"]);
+const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha", "Jo"]);
 
 app.post("/webhooks", async (req, res) => {
   console.log("Received Webhook!")
