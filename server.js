@@ -5,21 +5,25 @@ import axios from "axios";
 const app = express();
 const PORT = process.env.PORT || 4325;
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL; // Add your Slack Webhook URL
-console.log("SLACK WEBHOOK URL", SLACK_WEBHOOK_URL)
+console.log("SLACK WEBHOOK URL", SLACK_WEBHOOK_URL);
 
 app.use(bodyParser.json());
+
+// List of allowed authors (first names only)
+const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha"]);
 
 app.post("/webhooks", async (req, res) => {
   console.log("Received Notion Webhook:", JSON.stringify(req.body, null, 2));
 
   const prData = req.body.pullrequest;
   if (prData) {
-    const author = prData.author?.display_name;
+    const authorFullName = prData.author?.display_name;
+    const authorFirstName = authorFullName?.split(" ")[0]; // Extract first name
     const prTitle = prData.title;
     const prLink = prData.links?.html?.href;
     const branch = `${prData.source?.branch?.name} → ${prData.destination?.branch?.name}`;
 
-    if (author === "Aaron Ahn") {
+    if (authorFirstName && allowedAuthors.has(authorFirstName)) {
       const slackMessage = {
         text: ":wave: Hey team, a new pull request is ready for review! :eyes:",
         attachments: [
@@ -30,7 +34,7 @@ app.post("/webhooks", async (req, res) => {
             fields: [
               {
                 title: "Created By",
-                value: author,
+                value: authorFullName,
                 short: true,
               },
               {
@@ -59,4 +63,3 @@ app.post("/webhooks", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Notion Webhook listening on port ${PORT}`);
 });
-
