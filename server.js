@@ -13,12 +13,13 @@ app.use(bodyParser.json());
 const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha"]);
 
 app.post("/webhooks", async (req, res) => {
-  console.log("Received Notion Webhook:", JSON.stringify(req.body, null, 2));
+  console.log("Received Webhook!")
 
   const prData = req.body.pullrequest;
   if (prData) {
     const authorFullName = prData.author?.display_name;
     const authorFirstName = authorFullName?.split(" ")[0]; // Extract first name
+    console.log("Author First Name:", authorFirstName, "Allowed?", allowedAuthors.has(authorFirstName))
     const prTitle = prData.title;
     const prLink = prData.links?.html?.href;
     const branch = `${prData.source?.branch?.name} → ${prData.destination?.branch?.name}`;
