@@ -4,32 +4,61 @@ import axios from "axios";
 
 const app = express();
 const PORT = process.env.PORT || 4325;
-const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL; // Add your Slack Webhook URL
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 console.log("SLACK WEBHOOK URL", SLACK_WEBHOOK_URL);
 
 app.use(bodyParser.json());
 
-// List of allowed authors (first names only)
 const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha", "Jo"]);
 
 app.post("/webhooks", async (req, res) => {
-  console.log("Received Webhook!")
+  console.log("Received Webhook!");
 
   const prData = req.body.pullrequest;
+  const eventType = req.body.event_type || req.body.eventKey; // Check event type
+
   if (prData) {
     const authorFullName = prData.author?.display_name;
-    const authorFirstName = authorFullName?.split(" ")[0]; // Extract first name
-    console.log("Author First Name:", authorFirstName, "Allowed?", allowedAuthors.has(authorFirstName))
+    const authorFirstName = authorFullName?.split(" ")[0];
+    console.log("Author First Name:", authorFirstName, "Allowed?", allowedAuthors.has(authorFirstName));
+
     const prTitle = prData.title;
     const prLink = prData.links?.html?.href;
-    const branch = `${prData.source?.branch?.name} → ${prData.destination?.branch?.name}`;
+    const sourceBranch = prData.source?.branch?.name;
+    const destinationBranch = prData.destination?.branch?.name;
+
+    // Only notify if PR is targeting 'develop'
+    if (destinationBranch !== "develop") {
+      console.log("Skipping: PR is not targeting 'develop'.");
+      return res.status(200).json({ message: "Webhook received, but PR is not for 'develop'" });
+    }
+
+    // Exclude PRs from 'master' to 'develop'
+    if (sourceBranch === "master" && destinationBranch === "develop") {
+      console.log("Skipping: PR from 'master' to 'develop'.");
+      return res.status(200).json({ message: "Webhook received, but PR is from 'master' to 'develop'" });
+    }
+
+    // Determine if it's a new PR or an update
+    const isNewPR = eventType?.includes("pullrequest:created");
+    const isUpdatedPR = eventType?.includes("pullrequest:updated");
+
+    let messageType = "";
+    if (isNewPR) {
+      messageType = ":wave: Hey team, a new pull request is ready for review! :eyes:";
+    } else if (isUpdatedPR) {
+      messageType = ":repeat: A pull request has been updated! :eyes:";
+    } else {
+      console.log("Skipping: PR is neither new nor updated.");
+      return res.status(200).json({ message: "Webhook received, but not a new PR or update" });
+    }
 
     if (authorFirstName && allowedAuthors.has(authorFirstName)) {
       const slackMessage = {
-        text: ":wave: Hey team, a new pull request is ready for review! :eyes:",
+        text: messageType,
         attachments: [
           {
-            color: "#36a64f",
+            color: isNewPR ? "#36a64f" : "#f4b400", // Green for new, yellow for updates
             title: prTitle,
             title_link: prLink,
             fields: [
@@ -40,18 +69,18 @@ app.post("/webhooks", async (req, res) => {
               },
               {
                 title: "Branch",
-                value: branch,
+                value: `${sourceBranch} → ${destinationBranch}`,
                 short: true,
               },
             ],
-            footer: "Don't forget to review! :mag: :memo:",
+            footer: isNewPR ? "Don't forget to review! :mag: :memo:" : "Review the latest changes! :repeat:",
           },
         ],
       };
 
       try {
         await axios.post(SLACK_WEBHOOK_URL, slackMessage);
-        console.log("✅ Slack notification sent!");
+        console.log(`✅ Slack notification sent for ${isNewPR ? "new PR" : "updated PR"}!`);
       } catch (error) {
         console.error("❌ Failed to send Slack message:", error);
       }
