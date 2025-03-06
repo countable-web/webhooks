@@ -17,7 +17,6 @@ app.post("/webhooks", async (req, res) => {
   const prData = req.body.pullrequest;
   const eventType = req.body.event_type || req.body.eventKey; // Check event type
   console.log("PR DATA", prData)
-    ,
   if (prData) {
     const authorFullName = prData.author?.display_name;
     const authorFirstName = authorFullName?.split(" ")[0];
