@@ -137,10 +137,10 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
 
   const slackMessage = {
     text: `:bulb: Missing Fields for ticket [${title}]`,
-    pretext: "🚀 *Reminder:* Set release build & provide accurate QA instructions 🔥",
     attachments: [
       {
         color: "#FFA500",
+        pretext: "🚀 *Reminder:* Set release build & provide accurate QA instructions 🔥",
         title: title,
         title_link: url,
         fields: [
