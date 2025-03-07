@@ -11,6 +11,38 @@ app.use(bodyParser.json());
 
 const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha", "Jo"]);
 
+const mapping = [
+  {
+    name: 'Aaron',
+    slackMemberId: 'U01LAMCBGG1'
+  },
+  {
+    name: 'Trixia',
+    slackMemberId: 'U07JZ8YV4G1'
+  },
+
+  {
+    name: 'Dwight',
+    slackMemberId: 'U03HSQ9DLJ3'
+  },
+
+  {
+    name: 'Hyoeun',
+    slackMemberId: 'U07K96AFGVD'
+  },
+
+  {
+    name: 'Samantha',
+    slackMemberId: 'U08FT76GVQA'
+  },
+
+  {
+    name: 'Jo',
+    slackMemberId: 'U04HA3NFPN0'
+  },
+]
+
+
 app.post("/webhooks/bitbucket", async (req, res) => {
   console.log("Received Webhook!");
 
@@ -92,13 +124,16 @@ app.post("/webhooks/bitbucket", async (req, res) => {
 
 
 app.post("/webhooks/notion-zapier", async (req, res) => {
-  console.log("Received Zapier Notion Webhook!")
   const { title, assignee, url } = req.body;
 
   if (!title || !url) {
     console.log("Skipping: Missing required fields.");
     return res.status(400).json({ message: "Invalid payload" });
   }
+
+  const slack = mapping.find(m => assignee?.include(m.name))
+  const id = slack.slackMemberId
+  const mention = id ? `<@${id}>` : assignee
 
   const slackMessage = {
     text: `:bulb: New Ticket In QA [${title}]`,
@@ -110,7 +145,7 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
         fields: [
           {
             title: "Assigned To",
-            value: assignee || "Unassigned",
+            value: mention || "Unassigned",
             short: true,
           },
           {
