@@ -136,11 +136,10 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
   const mention = id ? `<@${id}>` : assignee
 
   const slackMessage = {
-    text: `:bulb: Missing Fields for ticket [${title}]`,
+    text: `:bulb: Missing Fields on ticket moved to QA`,
     attachments: [
       {
         color: "#FFA500",
-        pretext: "🚀 *Reminder:* Set release build & provide accurate QA instructions 🔥",
         title: title,
         title_link: url,
         fields: [
@@ -148,6 +147,11 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
             title: "Assigned To",
             value: mention || "Unassigned",
             short: true,
+          },
+          {
+            title: "Action",
+            value: "Provide accurate instructions for QA & Set Release Version number",
+            short: false,
           },
         ],
       },
