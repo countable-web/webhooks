@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 const allowedAuthors = new Set(["Aaron", "Trixia", "Dwight", "Hyoeun", "Samantha", "Jo"]);
 
-app.post("/webhooks", async (req, res) => {
+app.post("/webhooks/bitbucket", async (req, res) => {
   console.log("Received Webhook!");
 
   const prData = req.body.pullrequest;
@@ -89,6 +89,50 @@ app.post("/webhooks", async (req, res) => {
 
   res.status(200).json({ message: "Webhook received" });
 });
+
+
+app.post("/webhooks/notion-zapier", async (req, res) => {
+  console.log("Received Zapier Notion Webhook!")
+  const { title, assignee, url } = req.body;
+
+  if (!title || !url) {
+    console.log("Skipping: Missing required fields.");
+    return res.status(400).json({ message: "Invalid payload" });
+  }
+
+  const slackMessage = {
+    text: `:bulb: New Ticket In QA [${title}]`,
+    attachments: [
+      {
+        color: "#36a64f",
+        title: title,
+        title_link: url,
+        fields: [
+          {
+            title: "Assigned To",
+            value: assignee || "Unassigned",
+            short: true,
+          },
+          {
+            title: "Reminder",
+            value: "Set release build & provide accurate QA instructions",
+            short: false,
+          },
+        ],
+      },
+    ],
+  };
+
+  try {
+    await axios.post(SLACK_WEBHOOK_URL, slackMessage);
+    console.log(`✅ Slack notification sent for new ticket!`);
+  } catch (error) {
+    console.error("❌ Failed to send Slack message:", error);
+  }
+
+  res.status(200).json({ message: "Webhook received" });
+});
+
 
 app.listen(PORT, () => {
   console.log(`✅ Notion Webhook listening on port ${PORT}`);
