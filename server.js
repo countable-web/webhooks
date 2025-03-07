@@ -77,9 +77,9 @@ app.post("/webhooks/bitbucket", async (req, res) => {
 
     let messageType = "";
     if (isNewPR) {
-      messageType = ":wave: Hey team, a new pull request is ready for review! :eyes:";
+      messageType = ":wave: Hey team, a new pull request is ready for review!";
     } else if (isUpdatedPR) {
-      messageType = ":repeat: A pull request has been updated! :eyes:";
+      messageType = ":repeat: A pull request has been updated!";
     } else {
       console.log("Skipping: PR is neither new nor updated.");
       return res.status(200).json({ message: "Webhook received, but not a new PR or update" });
@@ -131,15 +131,16 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
     return res.status(400).json({ message: "Invalid payload" });
   }
 
-  const slack = mapping.find(m => assignee?.include(m.name))
+  const slack = mapping.find(m => assignee?.includes(m.name))
   const id = slack.slackMemberId
   const mention = id ? `<@${id}>` : assignee
 
   const slackMessage = {
-    text: `:bulb: New Ticket In QA [${title}]`,
+    text: `:bulb: Missing Fields for ticket [${title}]`,
+    pretext: "🚀 *Reminder:* Set release build & provide accurate QA instructions 🔥",
     attachments: [
       {
-        color: "#36a64f",
+        color: "#FFA500",
         title: title,
         title_link: url,
         fields: [
@@ -147,11 +148,6 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
             title: "Assigned To",
             value: mention || "Unassigned",
             short: true,
-          },
-          {
-            title: "Reminder",
-            value: "Set release build & provide accurate QA instructions",
-            short: false,
           },
         ],
       },
