@@ -111,7 +111,7 @@ app.post("/webhooks/bitbucket", async (req, res) => {
       };
       // Check if PR description contains "[Enter Here]"
       console.log("PR Description", prDescription)
-      if (prDescription.includes("[Enter Here]")) {
+      if (prDescription.includes("[Enter Here]") || prDescription.includes(`Enter Here`)) {
 
         const slack = mapping.find(m => assignee?.includes(m.name))
         const id = slack.slackMemberId
