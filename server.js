@@ -53,7 +53,7 @@ app.post("/webhooks/bitbucket", async (req, res) => {
     const authorFullName = prData.author?.display_name;
     const authorFirstName = authorFullName?.split(" ")[0];
     console.log("Author First Name:", authorFirstName, "Allowed?", allowedAuthors.has(authorFirstName));
-
+    const prDescription = prData.description || "";
     const prTitle = prData.title;
     const prLink = prData.links?.html?.href;
     const sourceBranch = prData.source?.branch?.name;
@@ -109,6 +109,18 @@ app.post("/webhooks/bitbucket", async (req, res) => {
           },
         ],
       };
+      // Check if PR description contains "[Enter Here]"
+      if (prDescription.includes("[Enter Here]")) {
+
+        const slack = mapping.find(m => assignee?.includes(m.name))
+        const id = slack.slackMemberId
+
+        slackMessage.attachments.push({
+          color: "#ff0000",
+          title: "🚨 Missing Information in PR Description!",
+          text: `Hey <@${id || authorFirstName}>, it looks like your PR description still contains placeholders ("[Enter Here]").\n\nPlease complete the DoD checklist before submitting!`,
+        });
+      }
 
       try {
         await axios.post(SLACK_WEBHOOK_URL, slackMessage);
@@ -150,7 +162,7 @@ app.post("/webhooks/notion-zapier", async (req, res) => {
           },
           {
             title: "Action",
-            value: "Provide accurate instructions for QA & Set Release Version number",
+            value: "Provide accurate instructions for QA & Set Release Version numbe:wqa!",
             short: false,
           },
         ],
