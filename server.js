@@ -53,7 +53,7 @@ app.post("/webhooks/bitbucket", async (req, res) => {
     const authorFullName = prData.author?.display_name;
     const authorFirstName = authorFullName?.split(" ")[0];
     console.log("Author First Name:", authorFirstName, "Allowed?", allowedAuthors.has(authorFirstName));
-    const prDescription = prData.description || "";
+    const prDescription = prData.description.raw || "";
     const prTitle = prData.title;
     const prLink = prData.links?.html?.href;
     const sourceBranch = prData.source?.branch?.name;
